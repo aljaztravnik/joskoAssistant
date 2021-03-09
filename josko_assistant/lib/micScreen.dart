@@ -1,0 +1,213 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:flutter_blue/flutter_blue.dart';
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+
+class MicScreen extends StatefulWidget
+{
+  const MicScreen({Key key, @required this.device}) : super(key: key);
+  final BluetoothDevice device;
+  @override
+  _MicScreenState createState() => _MicScreenState();
+}
+
+class _MicScreenState extends State<MicScreen>
+{
+  static const String COMMAND_SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+  static const String COMMAND_CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+  BluetoothCharacteristic commandCharacteristic;
+  stt.SpeechToText _speech;
+  bool _isListening = false;
+  String _text = '';
+
+  @override
+  void initState()
+  {
+    super.initState();
+    _speech = stt.SpeechToText();
+    connectToDevice();
+  }
+
+  connectToDevice() async {
+    if (widget.device == null) {
+      _Pop();
+      return;
+    }
+
+    /*new Timer(const Duration(seconds: 15), () {
+      if (!isReady) {
+        disconnectFromDevice();
+        _Pop();
+      }
+    });*/
+
+    await widget.device.connect();
+    discoverServices();
+  }
+
+  disconnectFromDevice() {
+    if (widget.device == null) {
+      _Pop();
+      return;
+    }
+    widget.device.disconnect();
+  }
+
+  discoverServices() async
+  {
+    if (widget.device == null) {
+      _Pop();
+      return;
+    }
+
+    List<BluetoothService> services = await widget.device.discoverServices();
+    services.forEach((service)
+    {
+      if(service.uuid.toString() == COMMAND_SERVICE_UUID)
+      {
+        service.characteristics.forEach((characteristic)
+        {
+          if (characteristic.uuid.toString() == COMMAND_CHARACTERISTIC_UUID)  commandCharacteristic = characteristic;
+        });
+      }
+    });
+  }
+
+  Future<bool> _onWillPop()
+  {
+    return showDialog
+    (
+      context: context,
+      builder: (context) => new AlertDialog
+      (
+        title: Text('Are you sure?'),
+        content: Text('Do you want to disconnect device and go back?'),
+        actions: <Widget>
+        [
+          new FlatButton
+          (
+            onPressed: () => Navigator.of(context).pop(false),
+            child: new Text('No')
+          ),
+          new FlatButton
+          (
+            onPressed: () {
+              disconnectFromDevice();
+              Navigator.of(context).pop(true);
+            },
+            child: new Text('Yes')
+          ),
+        ],
+      ) ?? false
+    );
+  }
+
+  _Pop() {
+    Navigator.of(context).pop(true);
+  }
+
+  sendCommand() async
+  {
+    await commandCharacteristic.write(utf8.encode(_text));
+  }
+
+  void _listen() async
+  {
+    if(!_isListening)
+    {
+      bool available = await _speech.initialize(
+        onStatus: (val) => print("onStatus: $val"),
+        onError: (val) => print("onError: $val"),
+      );
+      if(available)
+      {
+        setState(() {
+          _isListening = true;
+        });
+        _speech.listen(
+          onResult: (val) => setState((){
+            _text = val.recognizedWords;
+          }),
+        );
+      }
+    }
+    else
+    {
+      print("RECEIVED TEXT: $_text");
+      setState(() {
+      _isListening = false;
+      });
+      _speech.stop();
+      await sendCommand();
+      //_text = '';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context)
+  {
+    return WillPopScope
+    (
+      onWillPop: _onWillPop,
+      child: Scaffold
+      (
+        backgroundColor: Colors.black,
+        body: Center
+        (
+          child: Column
+          (
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>
+            [
+              Text("JOŠKO ASSISTANT", style: TextStyle(color: Colors.white, fontFamily: 'OpenSans', fontSize: 35.0, fontWeight: FontWeight.bold),),
+              Padding(padding: EdgeInsets.only(bottom: 15)),
+              Row
+              (
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>
+                [
+                  RaisedButton
+                  (
+                    elevation: 5.0,
+                    onPressed: () {_listen();},
+                    shape: RoundedRectangleBorder
+                    (
+                      borderRadius: BorderRadius.circular(18.0),
+                      side: BorderSide(color: Colors.white)
+                    ),
+                    child: Icon(_isListening ? MdiIcons.microphoneOff : MdiIcons.microphone, color: Colors.black),
+                  ),
+                  RaisedButton
+                  (
+                    elevation: 5.0,
+                    onPressed: ()
+                    {
+                      setState(() {
+                        _text = '';
+                      });
+                    },
+                    shape: RoundedRectangleBorder
+                    (
+                      borderRadius: BorderRadius.circular(18.0),
+                      side: BorderSide(color: Colors.white)
+                    ),
+                    child: Text("CLEAR", style: TextStyle(color: Colors.black, fontFamily: 'OpenSans', fontSize: 20.0, fontWeight: FontWeight.normal),),
+                  ),
+                ]
+              ),
+              Padding(padding: EdgeInsets.only(bottom: 15)),
+              Text("Command: $_text", style: TextStyle(color: Colors.white, fontFamily: 'OpenSans', fontSize: 25.0, fontWeight: FontWeight.normal),),
+            ]
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() => super.dispose();
+}
