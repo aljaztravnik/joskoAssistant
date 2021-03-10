@@ -96,21 +96,17 @@ class MyCallbacks: public BLECharacteristicCallbacks
   }
   void onWrite(BLECharacteristic* pCharacteristic)
   {
-    std::string defaultUrl = "https://api.wit.ai/message?v=20210119&q=";
     std::string rxValue = pCharacteristic->getValue();
-    std::string placeholder = " %";
-    if(rxValue != "")
+    std::string defaultUrl = "https://api.wit.ai/message?v=20210119&q=";
+    if(rxValue.size() > 0)
       if(rxValue[0] >= 'A' && rxValue[0] <= 'Z') rxValue[0] += 32;
-    Serial.print("RECEIVED ON BLE: ");
-    Serial.println(rxValue.c_str());
-    for(int i = 0; i < rxValue.size(); i++)
-    {
-      if(rxValue[i] == placeholder[0]) rxValue[i] = placeholder[1];
-    }
-    const char* url = (defaultUrl + rxValue).c_str();
-    //const char* url = "https://api.wit.ai/message?v=20210119&q=turn%the%lights%on";
-    Serial.print("URL: ");
-    Serial.println(url);
+    int n = defaultUrl.size() + rxValue.size() + 1;
+    char charUrl[n];
+    strcpy(charUrl, defaultUrl.c_str());
+    strcat(charUrl, rxValue.c_str());
+    for(int i = 0; i < n && charUrl[i] != '\0'; ++i)
+      if(charUrl[i] == ' ') charUrl[i] = '%';
+    const char* url = charUrl;
     String reply = httpGETRequest(url);
     Serial.println(reply);
     JSONVar myObject = JSON.parse(reply);
