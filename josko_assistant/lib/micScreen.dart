@@ -99,24 +99,15 @@ class _MicScreenState extends State<MicScreen> {
   }
 
   sendCommand() async {
-    // kle nared nek map z moznimi ukazi
-    List<String> turnOnOffUkazi = [
-      "lights",
-      "computer",
-    ];
-    List<String> otherUkazi = [
-      "time",
-      "pause",
-      "resume",
-    ];
+    List<String> turnOnOffUkazi = ["lights", "computer", "song", "music"];
+    List<String> otherUkazi = ["time"];
 
     String ukaz = "";
     int i = 0;
     int onOff = 0;
 
-    if (_text.contains("turn on"))
-      onOff = 1;
-    else if (_text.contains("turn off")) onOff = 0;
+    if (_text.contains("turn on") || _text.contains("start") || _text.contains("resume")) onOff = 1;
+    else if (_text.contains("turn off") || _text.contains("stop") || _text.contains("pause")) onOff = 0;
 
     for (final u in turnOnOffUkazi) {
       if (_text.contains(u)) {
@@ -127,20 +118,9 @@ class _MicScreenState extends State<MicScreen> {
       i++;
     }
 
-    if (_text.contains("song") || _text.contains("music")) {
-      if (_text.contains("start")) {
-        ukaz = i.toString() + " 1";
-        i += 2;
-      } else if (_text.contains("stop")) {
-        i++;
-        ukaz = i.toString() + " 0";
-        i++;
-      }
-    }
-
     for (final u in otherUkazi) {
       if (_text.contains(u)) {
-        ukaz = i.toString() + " 0";
+        ukaz = i.toString() + " 1";
         i++;
         break;
       }
