@@ -132,7 +132,8 @@ class _MicScreenState extends State<MicScreen> {
   }
 
   void _listen() async {
-    if (!_isListening) {
+    if (!_isListening)
+    {
       bool available = await _speech.initialize(
         onStatus: (val) => print("onStatus: $val"),
         onError: (val) => print("onError: $val"),
@@ -147,7 +148,9 @@ class _MicScreenState extends State<MicScreen> {
           }),
         );
       }
-    } else {
+    }
+    else
+    {
       print("RECEIVED TEXT: $_text");
       setState(() {
         _isListening = false;

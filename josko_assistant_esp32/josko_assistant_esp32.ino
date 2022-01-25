@@ -6,8 +6,8 @@
 
 #define COMMAND_SERVICE_UUID "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define COMMAND_CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
-const char* ssid = "LMFE";
-const char* password = "lmfe_wifi";
+const char* ssid = "Telemach-8a1e";
+const char* password = "polica20a";
 BLEServer* pServer = NULL;
 BLECharacteristic* p_command_characteristic = NULL;
 bool deviceConnected = false;
