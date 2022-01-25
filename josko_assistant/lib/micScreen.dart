@@ -161,7 +161,140 @@ class _MicScreenState extends State<MicScreen> {
     }
   }
 
+
+  
+
   @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: Column(
+            children: <Widget>
+            [
+              Container
+              (
+                decoration: kBoxDecorationStyle,
+                //width: MediaQuery.of(context).size.width - 10,
+                child: Column
+                (
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>
+                  [
+                    SizedBox(height: 20.0),
+                    // VSI ROW ELEMENTI MORJO BIT GENERIRANI V FOR LOOPU 
+                    Row
+                    (
+                      children: <Widget>
+                      [
+                        SizedBox(width: 5.0,),
+                        Text("LUČ DNEVNA", style: TextStyle(color: Colors.white, fontFamily: 'OpenSans', fontSize: 15.0, fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
+                        // KLE BO IME OD FUNKCIJE
+                        RaisedButton
+                        (
+                          elevation: 5.0,
+                          onPressed: ()
+                          {
+                            
+                          },
+                          //padding: EdgeInsets.all(15.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                          //color: Colors.white,
+                          child: Icon(MdiIcons.fromString('toggle-switch-off'), color: Colors.white),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20.0),
+                    Row
+                    (
+                      children: <Widget>
+                      [
+                        SizedBox(width: 5.0,),
+                        Text("TIME", style: TextStyle(color: Colors.white, fontFamily: 'OpenSans', fontSize: 15.0, fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
+                        // KLE BO IME OD FUNKCIJE
+                        RaisedButton
+                        (
+                          elevation: 5.0,
+                          onPressed: ()
+                          {
+                            
+                          },
+                          //padding: EdgeInsets.all(15.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                          //color: Colors.white,
+                          child: Icon(MdiIcons.fromString('clock-outline'), color: Colors.white),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20.0),
+                  ]
+                )
+              ),
+              Padding(padding: EdgeInsets.only(bottom: 15)),
+              Row
+              (
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>
+                [
+                  RaisedButton(
+                    elevation: 5.0,
+                    onPressed: () {
+                      _listen();
+                    },
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.0),
+                        side: BorderSide(color: Colors.white)),
+                    child: Icon(
+                        _isListening
+                            ? MdiIcons.microphoneOff
+                            : MdiIcons.microphone,
+                        color: Colors.black),
+                  ),
+                  RaisedButton(
+                    elevation: 5.0,
+                    onPressed: () {
+                      setState(() {
+                        _text = '';
+                      });
+                    },
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.0),
+                        side: BorderSide(color: Colors.white)),
+                    child: Text(
+                      "CLEAR",
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontFamily: 'OpenSans',
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.normal),
+                    ),
+                  ),
+                ]
+              ),
+              Padding(padding: EdgeInsets.only(bottom: 15)),
+              Text(
+                "Command: $_text",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'OpenSans',
+                    fontSize: 25.0,
+                    fontWeight: FontWeight.normal
+                ),
+              ),
+            ]
+          )
+        )
+      )
+    )
+  }
+      
+  /*@override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: _onWillPop,
@@ -231,7 +364,7 @@ class _MicScreenState extends State<MicScreen> {
         ),
       ),
     );
-  }
+  }*/
 
   @override
   void dispose() => super.dispose();
