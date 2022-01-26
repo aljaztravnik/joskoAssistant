@@ -4,6 +4,7 @@ import 'package:flutter_blue/flutter_blue.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'constants.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class MicScreen extends StatefulWidget {
@@ -288,10 +289,10 @@ class _MicScreenState extends State<MicScreen> {
                 ),
               ),
             ]
-          )
-        )
-      )
-    )
+          ),
+        ),
+      ),
+    );
   }
       
   /*@override
