@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'constants.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -184,8 +183,43 @@ class _MicScreenState extends State<MicScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>
                   [
+                    // VSI ROW ELEMENTI MORJO BIT GENERIRANI V FOR LOOPU
                     SizedBox(height: 20.0),
-                    // VSI ROW ELEMENTI MORJO BIT GENERIRANI V FOR LOOPU 
+                    Row
+                    (
+                      children: <Widget>
+                      [
+                        RaisedButton
+                        (
+                          elevation: 5.0,
+                          onPressed: ()
+                          {
+                            
+                          },
+                          //padding: EdgeInsets.all(15.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                          //color: Colors.white,
+                          child: Icon(MdiIcons.fromString('plus-box'), color: Colors.white),
+                        ),
+                        RaisedButton
+                        (
+                          elevation: 5.0,
+                          onPressed: ()
+                          {
+                            
+                          },
+                          //padding: EdgeInsets.all(15.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                          //color: Colors.white,
+                          child: Icon(MdiIcons.fromString('minus-box'), color: Colors.white),
+                        ),
+                      ]
+                    ),
+                    SizedBox(height: 20.0),
                     Row
                     (
                       children: <Widget>
