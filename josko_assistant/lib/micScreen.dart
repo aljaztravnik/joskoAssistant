@@ -4,6 +4,7 @@ import 'package:flutter_blue/flutter_blue.dart';
 import 'dart:convert';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'constants.dart';
+import 'package:http/http.dart' as http;
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class MicScreen extends StatefulWidget {
@@ -14,13 +15,14 @@ class MicScreen extends StatefulWidget {
 }
 
 class _MicScreenState extends State<MicScreen> {
-  static const String COMMAND_SERVICE_UUID =
-      "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
-  static const String COMMAND_CHARACTERISTIC_UUID =
-      "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+  static const String COMMAND_SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+  static const String COMMAND_CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
   BluetoothCharacteristic commandCharacteristic;
   stt.SpeechToText _speech;
   bool _isListening = false;
+  bool error, sending, success;
+  String msg;
+  String phpurl = "http://192.168.1.2/joskoAssistant_restApi/main.php";
   String _text = '';
 
   @override
