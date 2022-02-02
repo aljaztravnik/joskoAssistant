@@ -21,15 +21,74 @@ class _MicScreenState extends State<MicScreen> {
   stt.SpeechToText _speech;
   bool _isListening = false;
   bool error, sending, success;
+  bool loadTasks = false;
   String msg;
   String phpurl = "http://192.168.1.2/joskoAssistant_restApi/main.php";
   String _text = '';
+  List<String> taskTypes;
+  // TASK MORE MET: pinNum, typeID ------ kasneje še lokacijo ali številko naprave
+  List<Map<String, int>> tasks = List<Map<String, int>>.empty(growable: true);
+  List<String> iconNames = ['toggle-switch-off', 'clock-outline', 'music-note'];
 
   @override
   void initState() {
     super.initState();
     _speech = stt.SpeechToText();
     connectToDevice();
+    requestTaskTypes();
+  }
+
+  Future<void> requestTaskTypes() async {
+    var res = await http.post(Uri.parse(phpurl), body: {
+      "gettasktypes": "ja",
+    });
+
+    if (res.statusCode == 200)
+    {
+      // SENDING SUCCESS
+      print(res.body);
+      var data = json.decode(res.body);
+      if(data["error"]) print("REQUEST ERROR: ${data["error"]}");
+      else
+      {
+        // REQUEST SUCCESS
+        print("TASK TYPES!!!!!!!!!!!!!");
+        taskTypes = data["message"].split(",");
+        for(int i = 0; i < taskTypes.length; i++)
+          print("${taskTypes[i]}");
+
+        requestTaskList(); // ob uspehu in napolnjenem taskTypes arrayu, se kliče requestTaskList
+      }
+    }
+  }
+
+  Future<void> requestTaskList() async {
+    var res = await http.post(Uri.parse(phpurl), body: {
+      "gettasklist": "ja",
+      "userid": "3",
+    });
+
+    if (res.statusCode == 200)
+    {
+      // SENDING SUCCESS
+      var data = json.decode(res.body);
+      if(data["error"]) print("REQUEST ERROR: ${data["error"]}");
+      else
+      {
+        // REQUEST SUCCESS
+        List<String> splitTasks = data["message"].split(",");
+
+        for (String t in splitTasks) {
+          List<String> splitT = t.split(":");
+          Map<String, int> task = {"pinNum": int.parse(splitT[1]), "typeID": int.parse(splitT[2]) - 1};
+          tasks.add(task);
+        }
+        print("KONEC!!!!!!!!!!!!!!! TASKS LENGTH: ${tasks.length}");
+        setState(() {
+          loadTasks = true;
+        });
+      }
+    }
   }
 
   connectToDevice() async {
@@ -37,13 +96,6 @@ class _MicScreenState extends State<MicScreen> {
       _Pop();
       return;
     }
-
-    /*new Timer(const Duration(seconds: 15), () {
-      if (!isReady) {
-        disconnectFromDevice();
-        _Pop();
-      }
-    });*/
 
     await widget.device.connect();
     discoverServices();
@@ -164,7 +216,81 @@ class _MicScreenState extends State<MicScreen> {
   }
 
 
-  
+  List<Widget> taskWidgets()
+  {
+    List<Widget> kids = [];
+
+    kids.add(SizedBox(height: 20.0));
+    kids.add(
+      Row
+      (
+        children: <Widget>
+        [
+          RaisedButton
+          (
+            elevation: 5.0,
+            onPressed: ()
+            {
+              
+            },
+            //padding: EdgeInsets.all(15.0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30.0),
+            ),
+            //color: Colors.white,
+            child: Icon(MdiIcons.fromString('plus-box'), color: Colors.white),
+          ),
+          RaisedButton
+          (
+            elevation: 5.0,
+            onPressed: ()
+            {
+                            
+            },
+            //padding: EdgeInsets.all(15.0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30.0),
+            ),
+            //color: Colors.white,
+            child: Icon(MdiIcons.fromString('minus-box'), color: Colors.white),
+          ),
+        ]
+      )
+    );
+
+    for(int i = 0; i < tasks.length; i++)
+    {
+      kids.add(SizedBox(height: 20.0));
+      kids.add(
+        Row
+        (
+          children: <Widget>
+          [
+            SizedBox(width: 5.0,),
+            Text(taskTypes[tasks[i]["typeID"]] + ((tasks[i]["typeID"] == 0) ? " ${tasks[i]["pinNum"].toString()}" : ""), style: TextStyle(color: Colors.white, fontFamily: 'OpenSans', fontSize: 15.0, fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
+            // KLE BO IME OD FUNKCIJE
+            RaisedButton
+            (
+              elevation: 5.0,
+              onPressed: ()
+              {                            
+              
+              },
+              //padding: EdgeInsets.all(15.0),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+              //color: Colors.white,
+              child: Icon(MdiIcons.fromString(iconNames[tasks[i]["typeID"]]), color: Colors.white),
+            ),
+          ],
+        )
+      );
+    }
+    
+    return kids;    
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -183,94 +309,7 @@ class _MicScreenState extends State<MicScreen> {
                 child: Column
                 (
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>
-                  [
-                    // VSI ROW ELEMENTI MORJO BIT GENERIRANI V FOR LOOPU
-                    SizedBox(height: 20.0),
-                    Row
-                    (
-                      children: <Widget>
-                      [
-                        RaisedButton
-                        (
-                          elevation: 5.0,
-                          onPressed: ()
-                          {
-                            
-                          },
-                          //padding: EdgeInsets.all(15.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                          //color: Colors.white,
-                          child: Icon(MdiIcons.fromString('plus-box'), color: Colors.white),
-                        ),
-                        RaisedButton
-                        (
-                          elevation: 5.0,
-                          onPressed: ()
-                          {
-                            
-                          },
-                          //padding: EdgeInsets.all(15.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                          //color: Colors.white,
-                          child: Icon(MdiIcons.fromString('minus-box'), color: Colors.white),
-                        ),
-                      ]
-                    ),
-                    SizedBox(height: 20.0),
-                    Row
-                    (
-                      children: <Widget>
-                      [
-                        SizedBox(width: 5.0,),
-                        Text("LUČ DNEVNA", style: TextStyle(color: Colors.white, fontFamily: 'OpenSans', fontSize: 15.0, fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
-                        // KLE BO IME OD FUNKCIJE
-                        RaisedButton
-                        (
-                          elevation: 5.0,
-                          onPressed: ()
-                          {
-                            
-                          },
-                          //padding: EdgeInsets.all(15.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                          //color: Colors.white,
-                          child: Icon(MdiIcons.fromString('toggle-switch-off'), color: Colors.white),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 20.0),
-                    Row
-                    (
-                      children: <Widget>
-                      [
-                        SizedBox(width: 5.0,),
-                        Text("TIME", style: TextStyle(color: Colors.white, fontFamily: 'OpenSans', fontSize: 15.0, fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
-                        // KLE BO IME OD FUNKCIJE
-                        RaisedButton
-                        (
-                          elevation: 5.0,
-                          onPressed: ()
-                          {
-                            
-                          },
-                          //padding: EdgeInsets.all(15.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                          //color: Colors.white,
-                          child: Icon(MdiIcons.fromString('clock-outline'), color: Colors.white),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 20.0),
-                  ]
+                  children: taskWidgets()
                 )
               ),
               Padding(padding: EdgeInsets.only(bottom: 15)),

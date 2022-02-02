@@ -1,4 +1,6 @@
-<?php 
+<?php
+    // POT: /var/www/html/joskoAssistant_restApi/main.php
+    
     $dbhost = "localhost";      // database host
     $dbuser = "aljaz";          // database username
     $dbpassword = "1234";       // database password
@@ -14,11 +16,11 @@
         exit();
     }
 
-    $loginAttempt = isset($_GET["username"]) && isset($_GET["password"]);
-    $deleteTask = isset($_GET["deletetask"]) && isset($_GET["userid"]);
-    $addTask = isset($_GET["addtask"]) && isset($_GET["pinnum"]) && isset($_GET["typeid"]) && isset($_GET["userid"]);
-    $getTaskTypes = isset($_GET["gettasktypes"]);
-
+    $loginAttempt = isset($_POST["username"]) && isset($_POST["password"]);
+    $getTaskTypes = isset($_POST["gettasktypes"]);
+    $getTaskList = isset($_POST["gettasklist"]) && isset($_POST["userid"]);
+    $addTask = isset($_POST["addtask"]) && isset($_POST["pinnum"]) && isset($_POST["typeid"]) && isset($_POST["userid"]);
+    $deleteTask = isset($_POST["deletetask"]) && isset($_POST["userid"]);
 
 
 
@@ -26,8 +28,8 @@
 
     if($loginAttempt)
     {
-       $uname = $_GET["username"];
-       $pword = $_GET["password"];
+       $uname = $_POST["username"];
+       $pword = $_POST["password"];
 
         if($return["error"] == false && strlen($uname) < 5){
             $return["error"] = true;
@@ -57,8 +59,8 @@
     }
     else if($deleteTask)
     {
-        $taskID = intval($_GET["deletetask"]);
-        $userID = intval($_GET["userid"]);
+        $taskID = intval($_POST["deletetask"]);
+        $userID = intval($_POST["userid"]);
 
         //$taskID = mysqli_real_escape_string($link, $taskID);
         //$userID = mysqli_real_escape_string($link, $userID);
@@ -80,10 +82,10 @@
     }
     else if($addTask)
     {
-        $taskID = intval($_GET["addtask"]);
-        $pinNum = intval($_GET["pinnum"]);
-        $typeID = intval($_GET["typeid"]);
-        $userID = intval($_GET["userid"]);
+        $taskID = intval($_POST["addtask"]);
+        $pinNum = intval($_POST["pinnum"]);
+        $typeID = intval($_POST["typeid"]);
+        $userID = intval($_POST["userid"]);
     
         
         $sql = "INSERT INTO `Task` (`TaskID`, `PinNum`, `TypeID`) VALUES ('$taskID', '$pinNum', '$typeID')";
@@ -101,23 +103,55 @@
             $return["message"] = "add task failure";
         }
     }
-    else if($getTaskTypes)
+    else if($getTaskTypes) // pri kreiranju novega taska
     {
         $sql = "SELECT TypeName FROM Type";
         $res = mysqli_query($link, $sql);
 
         if(mysqli_num_rows($res) >= 1)
         {
-            
             while($row = mysqli_fetch_assoc($res))
             {
                 $return["message"] .= $row["TypeName"] . ',';
             }
+            $return["message"] = substr($return["message"], 0, -1); // odstrani zadnjo vejico iz stringa
         }
         else
         {
             $return["error"] = true;
             $return["message"] = "type return failure";
+        }
+    }
+    else if($getTaskList) // Pošlje nazaj vse taske od določenega userja. Taski so ločeni z vejicami, podatki o tasku pa z dvopičji.
+    {
+        // OBLIKA: TaskID:PinNum:TypeID,   ......
+
+        $userID = intval($_POST["userid"]);
+        //$sql = "SELECT `User_has_Task`.`TaskID` FROM `User_has_Task` WHERE `User_has_Task`.`UserID` = '$userID'";
+        $sql = "SELECT TaskID FROM User_has_Task WHERE UserID = '$userID'";
+        $res = mysqli_query($link, $sql);
+
+        if(mysqli_num_rows($res) >= 1)
+        {
+            while($row = mysqli_fetch_assoc($res))
+            {
+                $taskID = $row["TaskID"];
+                $sql2 = "SELECT * FROM Task WHERE TaskID = '$taskID'";
+                $res2 = mysqli_query($link, $sql2);
+
+                if(mysqli_num_rows($res2) == 1)
+                {
+                    $row2 = mysqli_fetch_assoc($res2);
+
+                    $return["message"] .= strval($row["TaskID"]) . ":" . strval($row2["PinNum"]) . ":" . strval($row2["TypeID"]) . ",";
+                }
+            }
+            $return["message"] = substr($return["message"], 0, -1); // odstrani zadnjo vejico iz stringa
+        }
+        else
+        {
+            $return["error"] = true;
+            $return["message"] = "task return failure";
         }
     }
     else

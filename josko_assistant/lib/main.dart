@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'findDevicesScreen.dart';
+import 'package:josko_assistant/findDevicesScreen.dart';
 
 void main()
 {

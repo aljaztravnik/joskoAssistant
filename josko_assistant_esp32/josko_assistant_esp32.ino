@@ -16,6 +16,7 @@ bool oldDeviceConnected = false;
 class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
       deviceConnected = true;
+      Serial.println("Device connected");
       BLEDevice::startAdvertising();
     };
     void onDisconnect(BLEServer* pServer) {
