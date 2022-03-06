@@ -21,7 +21,7 @@ class _LoginScreenState extends State<LoginScreen>
   TextEditingController passwordTextController = TextEditingController();
   int hereAuthenticated = 0;
   bool hasInternet = false;
-  String phpurl = "http://192.168.1.2/joskoAssistant_restApi/main.php";
+  String phpurl = "http://192.168.1.7/joskoAssistant_restApi/main.php";
 
   checkInternetConnectivity() async
   {

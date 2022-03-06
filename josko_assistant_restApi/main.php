@@ -1,6 +1,6 @@
 <?php
     // POT: /var/www/html/joskoAssistant_restApi/main.php
-    
+
     $dbhost = "localhost";      // database host
     $dbuser = "aljaz";          // database username
     $dbpassword = "1234";       // database password
@@ -82,26 +82,38 @@
     }
     else if($addTask)
     {
-        $taskID = intval($_POST["addtask"]);
         $pinNum = intval($_POST["pinnum"]);
         $typeID = intval($_POST["typeid"]);
         $userID = intval($_POST["userid"]);
-    
         
-        $sql = "INSERT INTO `Task` (`TaskID`, `PinNum`, `TypeID`) VALUES ('$taskID', '$pinNum', '$typeID')";
-        $sql2 = "INSERT INTO `User_has_Task` (`UserID`, `TaskID`) VALUES ('$userID', '$taskID')";
-        $res = mysqli_query($link, $sql);
-        $res2 = mysqli_query($link, $sql2);
-
-        if($res && $res2)
+        $getLastTaskIDsql = "SELECT TaskID FROM Task ORDER BY TaskID DESC LIMIT 1";
+        $resTaskID = mysqli_query($link, $getLastTaskIDsql);
+        if(mysqli_num_rows($resTaskID) == 1)
         {
-            $return["message"] = "add task success";
+            $row = mysqli_fetch_assoc($resTaskID);
+            $taskID = $row["TaskID"] + 1;
+
+            $sql = "INSERT INTO `Task` (`TaskID`, `PinNum`, `TypeID`) VALUES ('$taskID', '$pinNum', '$typeID')";
+            $sql2 = "INSERT INTO `User_has_Task` (`UserID`, `TaskID`) VALUES ('$userID', '$taskID')";
+            $res = mysqli_query($link, $sql);
+            $res2 = mysqli_query($link, $sql2);
+
+            if($res && $res2)
+            {
+                $return["message"] = "add task success";
+            }
+            else
+            {
+                $return["error"] = true;
+                $return["message"] = "add task failure";
+            }
         }
         else
         {
             $return["error"] = true;
-            $return["message"] = "add task failure";
+            $return["message"] = "error at taskid select";
         }
+        
     }
     else if($getTaskTypes) // pri kreiranju novega taska
     {

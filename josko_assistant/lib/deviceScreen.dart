@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
-import 'package:flutter/foundation.dart';
 import 'widgets.dart';
 
 class DeviceScreen extends StatefulWidget
@@ -11,7 +10,7 @@ class DeviceScreen extends StatefulWidget
 }
 class _DeviceScreenState extends State<DeviceScreen>
 {
-  List<Widget> _buildServiceTiles(List<BluetoothService> services) 
+  List<Widget> _buildServiceTiles(List<BluetoothService> services)
   {
     return services
         .map(

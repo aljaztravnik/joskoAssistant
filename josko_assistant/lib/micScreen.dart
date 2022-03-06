@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
+import 'package:josko_assistant/addTask.dart';
 import 'dart:convert';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'constants.dart';
@@ -23,7 +24,7 @@ class _MicScreenState extends State<MicScreen> {
   bool error, sending, success;
   bool loadTasks = false;
   String msg;
-  String phpurl = "http://192.168.1.2/joskoAssistant_restApi/main.php";
+  String phpurl = "http://192.168.1.7/joskoAssistant_restApi/main.php";
   String _text = '';
   List<String> taskTypes;
   // TASK MORE MET: pinNum, typeID ------ kasneje še lokacijo ali številko naprave
@@ -48,7 +49,7 @@ class _MicScreenState extends State<MicScreen> {
       // SENDING SUCCESS
       print(res.body);
       var data = json.decode(res.body);
-      if(data["error"]) print("REQUEST ERROR: ${data["error"]}");
+      if(data["error"]) print("ERROR: ${data["error"]}");
       else
       {
         // REQUEST SUCCESS
@@ -72,7 +73,7 @@ class _MicScreenState extends State<MicScreen> {
     {
       // SENDING SUCCESS
       var data = json.decode(res.body);
-      if(data["error"]) print("REQUEST ERROR: ${data["error"]}");
+      if(data["error"]) print("ERROR: ${data["error"]}");
       else
       {
         // REQUEST SUCCESS
@@ -80,10 +81,10 @@ class _MicScreenState extends State<MicScreen> {
 
         for (String t in splitTasks) {
           List<String> splitT = t.split(":");
-          Map<String, int> task = {"pinNum": int.parse(splitT[1]), "typeID": int.parse(splitT[2]) - 1};
+          Map<String, int> task = {"taskID": int.parse(splitT[0]), "pinNum": int.parse(splitT[1]), "typeID": int.parse(splitT[2]) - 1};
           tasks.add(task);
         }
-        print("KONEC!!!!!!!!!!!!!!! TASKS LENGTH: ${tasks.length}");
+        print("TASKS LENGTH: ${tasks.length}");
         setState(() {
           loadTasks = true;
         });
@@ -231,7 +232,7 @@ class _MicScreenState extends State<MicScreen> {
             elevation: 5.0,
             onPressed: ()
             {
-              
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => AddTask(userID: "3", types: taskTypes,)));
             },
             //padding: EdgeInsets.all(15.0),
             shape: RoundedRectangleBorder(
@@ -245,7 +246,7 @@ class _MicScreenState extends State<MicScreen> {
             elevation: 5.0,
             onPressed: ()
             {
-                            
+                   
             },
             //padding: EdgeInsets.all(15.0),
             shape: RoundedRectangleBorder(
