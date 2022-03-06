@@ -7,7 +7,8 @@ import 'micScreen.dart';
 
 class FindDevicesScreen extends StatefulWidget
 {
-  const FindDevicesScreen({Key key}) : super(key: key);
+  const FindDevicesScreen({Key key, @required this.user}) : super(key: key);
+  final String user;
   @override
   _FindDevicesScreenState createState() => _FindDevicesScreenState();
 }
@@ -18,7 +19,7 @@ class _FindDevicesScreenState extends State<FindDevicesScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Connect to your device'),
+        title: Text('Poveži se na svojo napravo'),
       ),
       body: RefreshIndicator(
         onRefresh: () =>
@@ -41,7 +42,7 @@ class _FindDevicesScreenState extends State<FindDevicesScreen>
                                 if (snapshot.data ==
                                     BluetoothDeviceState.connected) {
                                   return RaisedButton(
-                                    child: Text('OPEN'),
+                                    child: Text('Odpri'),
                                     onPressed: () => Navigator.of(context).push(
                                         MaterialPageRoute(
                                             builder: (context) =>
@@ -66,7 +67,7 @@ class _FindDevicesScreenState extends State<FindDevicesScreen>
                           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context)
                                       {
                                         r.device.connect();
-                                        return MicScreen(device: r.device);
+                                        return MicScreen(device: r.device, userID: widget.user,);
                                       })),
                         ),
                       )

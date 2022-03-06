@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:josko_assistant/findDevicesScreen.dart';
+import 'package:josko_assistant/loginScreen.dart';
+//import 'package:josko_assistant/findDevicesScreen.dart';
 
 void main()
 {
-  runApp(SIARS());
+  runApp(JoskoAssistant());
 }
 
-class SIARS extends StatelessWidget
+class JoskoAssistant extends StatelessWidget
 {
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,7 @@ class SIARS extends StatelessWidget
       initialRoute: '/',
       routes: 
       {
-        '/' : (context) => FindDevicesScreen(),
+        '/' : (context) => LoginScreen(),
       },
     );
   }

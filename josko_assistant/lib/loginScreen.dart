@@ -6,7 +6,6 @@ import 'dart:convert';
 import 'findDevicesScreen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
-import 'package:flutter_blue/flutter_blue.dart';
 
 class LoginScreen extends StatefulWidget
 {
@@ -66,12 +65,9 @@ class _LoginScreenState extends State<LoginScreen>
       print(res.body);
       var data = json.decode(res.body);
       if(data["error"]) print("REQUEST ERROR: ${data["error"]}");
-      else
-      {
-        // REQUEST SUCCESS
-        setState(() {
-          hereAuthenticated = 1;
-        });
+      else{
+        print("USER ID: ${data["message"]}");
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) => FindDevicesScreen(user: data["message"])));
       }
     }
   }
@@ -187,64 +183,52 @@ class _LoginScreenState extends State<LoginScreen>
 
   List<Widget> getLoginScreen()
   {
-      List<Widget> kids = [];
-      if(hasInternet)
+    List<Widget> kids = [];
+    if(hasInternet)
+    {
+      if(hereAuthenticated == 0)
       {
-        if(hereAuthenticated == 0)
-        {
-          kids.add(new Container
+        kids.add(new Container
+        (
+          height: double.infinity,
+          width: double.infinity,
+          color: Colors.blue,
+        ));
+      }
+      if(hereAuthenticated == 0)
+      {
+        kids.add(new Container
+        (
+          height: double.infinity,
+          child: SingleChildScrollView
           (
-            height: double.infinity,
-            width: double.infinity,
-            color: Colors.blue,
-          ));
-        }
-
-        if(hereAuthenticated == 0)
-        {
-          kids.add(new Container
-          (
-            height: double.infinity,
-            child: SingleChildScrollView
+            physics: AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric
             (
-              physics: AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric
-              (
-                horizontal: 40.0,
-                vertical: 120.0,
-              ),
-              child: Column
-              (
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>
-                [
-                  Text('Josko Assistant',style: TextStyle(color: Colors.white,fontFamily: 'OpenSans',fontSize: 30.0,fontWeight: FontWeight.bold,),),
-                  SizedBox(height: 30.0),
-                  _buildEmailTF(),
-                  SizedBox(height: 30.0,),
-                  _buildPasswordTF(),
-                  _buildForgotPasswordBtn(),
-                  _buildLoginBtn(),
-                ],
-              ),
+              horizontal: 40.0,
+              vertical: 120.0,
             ),
-          ));
-        }
-        else if(hereAuthenticated == 1)
-        {
-          /*return(
-            StreamBuilder<BluetoothState>(
-              stream: FlutterBlue.instance.state,
-              initialData: BluetoothState.unknown,
-              builder: (c, snapshot) 
-              {
-                final state = snapshot.data;
-                return FindDevicesScreen();
-              }
-            ));
-          return FindDevicesScreen();*/
-          //Navigator.of(context).push(MaterialPageRoute(builder: (context) => FindDevicesScreen()));
-        }
+            child: Column
+            (
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>
+              [
+                Text('Josko Assistant',style: TextStyle(color: Colors.white,fontFamily: 'OpenSans',fontSize: 30.0,fontWeight: FontWeight.bold,),),
+                SizedBox(height: 30.0),
+                _buildEmailTF(),
+                SizedBox(height: 30.0,),
+                _buildPasswordTF(),
+                _buildForgotPasswordBtn(),
+                _buildLoginBtn(),
+              ],
+            ),
+          ),
+        ));
+      }
+      else if(hereAuthenticated == 1)
+      {
+        //Navigator.of(context).push(MaterialPageRoute(builder: (context) => FindDevicesScreen(user: uporabnik)));
+      }
     }
     else
     {

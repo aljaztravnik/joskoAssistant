@@ -10,8 +10,9 @@ import 'package:http/http.dart' as http;
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class MicScreen extends StatefulWidget {
-  const MicScreen({Key key, @required this.device}) : super(key: key);
+  const MicScreen({Key key, @required this.device, @required this.userID}) : super(key: key);
   final BluetoothDevice device;
+  final String userID;
   @override
   _MicScreenState createState() => _MicScreenState();
 }
@@ -50,7 +51,7 @@ class _MicScreenState extends State<MicScreen> {
       // SENDING SUCCESS
       print(res.body);
       var data = json.decode(res.body);
-      if(data["error"]) print("ERROR: ${data["error"]}");
+      if(data["error"]) print("ERROR: ${data["message"]}");
       else
       {
         // REQUEST SUCCESS
@@ -67,14 +68,14 @@ class _MicScreenState extends State<MicScreen> {
   Future<void> requestTaskList() async {
     var res = await http.post(Uri.parse(phpurl), body: {
       "gettasklist": "ja",
-      "userid": "3",
+      "userid": widget.userID,
     });
 
     if (res.statusCode == 200)
     {
       // SENDING SUCCESS
       var data = json.decode(res.body);
-      if(data["error"]) print("ERROR: ${data["error"]}");
+      if(data["error"]) print("ERROR: ${data["message"]}");
       else
       {
         // REQUEST SUCCESS
@@ -139,18 +140,18 @@ class _MicScreenState extends State<MicScreen> {
         context: context,
         builder: (context) =>
             new AlertDialog(
-              title: Text('Are you sure?'),
-              content: Text('Do you want to disconnect device and go back?'),
+              title: Text('Ali ste prepričani?'),
+              content: Text('Prekini povezavo?'),
               actions: <Widget>[
                 new FlatButton(
                     onPressed: () => Navigator.of(context).pop(false),
-                    child: new Text('No')),
+                    child: new Text('Ne')),
                 new FlatButton(
                     onPressed: () {
                       disconnectFromDevice();
                       Navigator.of(context).pop(true);
                     },
-                    child: new Text('Yes')),
+                    child: new Text('Ja')),
               ],
             ) ??
             false);
@@ -238,7 +239,7 @@ class _MicScreenState extends State<MicScreen> {
             elevation: 5.0,
             onPressed: ()
             {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => AddTask(userID: "3", types: taskTypes,))).then((context) {updateTaskList();});
+              Navigator.push(context, MaterialPageRoute(builder: (context) => AddTask(userID: widget.userID, types: taskTypes,))).then((context) {updateTaskList();});
             },
             //padding: EdgeInsets.all(15.0),
             shape: RoundedRectangleBorder(
@@ -252,7 +253,7 @@ class _MicScreenState extends State<MicScreen> {
             elevation: 5.0,
             onPressed: ()
             {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => DeleteTask(userID: "3", types: taskTypes, taskList: tasks))).then((context) {updateTaskList();});
+              Navigator.push(context, MaterialPageRoute(builder: (context) => DeleteTask(userID: widget.userID, types: taskTypes, taskList: tasks))).then((context) {updateTaskList();});
             },
             //padding: EdgeInsets.all(15.0),
             shape: RoundedRectangleBorder(
@@ -350,7 +351,7 @@ class _MicScreenState extends State<MicScreen> {
                         borderRadius: BorderRadius.circular(18.0),
                         side: BorderSide(color: Colors.white)),
                     child: Text(
-                      "CLEAR",
+                      "Počisti",
                       style: TextStyle(
                           color: Colors.black,
                           fontFamily: 'OpenSans',

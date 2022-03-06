@@ -44,7 +44,7 @@ class _AddScreenState extends State<AddTask> {
       // SENDING SUCCESS
       print(res.body);
       var data = json.decode(res.body);
-      if(data["error"]) print("ERROR: ${data["error"]}");
+      if(data["error"]) print("ERROR: ${data["message"]}");
       else{
         print("SUCCESS: ${data["message"]}");
         Navigator.of(context).pop(true);
