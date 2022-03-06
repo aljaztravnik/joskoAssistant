@@ -6,7 +6,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AddTask extends StatefulWidget {
-  const AddTask({Key key, @required this.userID, this.types}) : super(key: key);
+  const AddTask({Key key, @required this.userID, @required this.types}) : super(key: key);
   final String userID;
   final List<String> types;
   @override
@@ -63,12 +63,12 @@ class _AddScreenState extends State<AddTask> {
               actions: <Widget>[
                 new FlatButton(
                     onPressed: () => Navigator.of(context).pop(false),
-                    child: new Text('No')),
+                    child: new Text('Ne')),
                 new FlatButton(
                     onPressed: () {
                       Navigator.of(context).pop(true);
                     },
-                    child: new Text('Yes')),
+                    child: new Text('Ja')),
               ],
             ) ??
             false);
@@ -133,7 +133,7 @@ class _AddScreenState extends State<AddTask> {
       onWillPop: _onWillPop,
       child: Scaffold(
         backgroundColor: Colors.black,
-        body: Center(
+        body: SingleChildScrollView(
           child: Column(
             children: <Widget>
             [

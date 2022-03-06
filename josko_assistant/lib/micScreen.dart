@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:josko_assistant/addTask.dart';
+import 'package:josko_assistant/deleteTask.dart';
 import 'dart:convert';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'constants.dart';
@@ -90,6 +91,12 @@ class _MicScreenState extends State<MicScreen> {
         });
       }
     }
+  }
+
+  updateTaskList()
+  {
+    tasks.clear();
+    requestTaskList();
   }
 
   connectToDevice() async {
@@ -216,7 +223,6 @@ class _MicScreenState extends State<MicScreen> {
     }
   }
 
-
   List<Widget> taskWidgets()
   {
     List<Widget> kids = [];
@@ -232,7 +238,7 @@ class _MicScreenState extends State<MicScreen> {
             elevation: 5.0,
             onPressed: ()
             {
-              Navigator.of(context).push(MaterialPageRoute(builder: (context) => AddTask(userID: "3", types: taskTypes,)));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => AddTask(userID: "3", types: taskTypes,))).then((context) {updateTaskList();});
             },
             //padding: EdgeInsets.all(15.0),
             shape: RoundedRectangleBorder(
@@ -246,7 +252,7 @@ class _MicScreenState extends State<MicScreen> {
             elevation: 5.0,
             onPressed: ()
             {
-                   
+              Navigator.push(context, MaterialPageRoute(builder: (context) => DeleteTask(userID: "3", types: taskTypes, taskList: tasks))).then((context) {updateTaskList();});
             },
             //padding: EdgeInsets.all(15.0),
             shape: RoundedRectangleBorder(
@@ -299,7 +305,7 @@ class _MicScreenState extends State<MicScreen> {
       onWillPop: _onWillPop,
       child: Scaffold(
         backgroundColor: Colors.black,
-        body: Center(
+        body: SingleChildScrollView(
           child: Column(
             children: <Widget>
             [
