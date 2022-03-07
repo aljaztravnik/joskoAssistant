@@ -3,10 +3,6 @@ Podatkovna baza
 
 
 Aplikacija
-- bl connect screen
-- login screen
-- welcome screen (dodajas naprave)
-- glavni screen kjer mas seznam naprav (slideable navpično (lahko mas naprave razvrscene po kategorijah))
 - se en settings tab, kjer lahko dodajas/odstranjujes naprave/funkcije na napravah
 
 

@@ -161,29 +161,49 @@ class _MicScreenState extends State<MicScreen> {
     Navigator.of(context).pop(true);
   }
 
-  sendCommand() async {
-    List<String> turnOnOffUkazi = ["lights", "computer", "song", "music"];
-    List<String> otherUkazi = ["time"];
+  sendCommand() async 
+  {
+    List<String> turnOnOffUkazi = ["lights", "computer", "song", "music"]; // keywordi, ki imajo lahko on/off, start/stop itd.
+    List<String> otherUkazi = ["time"];                                    // keywordi, ki samo nekaj naredijo
+    // te stringi so pol custom (dodajajo se ob dodajanju taska in se posodabljajo tut na esp32)
 
     String ukaz = "";
     int i = 0;
-    int onOff = 0;
+    String onOff = "0";
 
-    if (_text.contains("turn on") || _text.contains("start") || _text.contains("resume")) onOff = 1;
-    else if (_text.contains("turn off") || _text.contains("stop") || _text.contains("pause")) onOff = 0;
+    if (_text.contains("turn on") || _text.contains("start") || _text.contains("resume")) onOff = "1";
+    else if (_text.contains("turn off") || _text.contains("stop") || _text.contains("pause")) onOff = "0";
 
-    for (final u in turnOnOffUkazi) {
-      if (_text.contains(u)) {
-        ukaz = i.toString() + " " + onOff.toString();
+    for (final u in turnOnOffUkazi)
+    {
+      if (_text.contains(u))
+      {
+        ukaz = i.toString() + " " + onOff;
+        if(_text.contains("pin")) // preveri na katerem pinu more funkcija neki nardit
+        {
+          List<String> splitText = _text.split(" ");
+          bool added = false;
+          for(int j = 0; j < splitText.length; j++)
+            if((splitText[j] == "pin" || splitText[j] == "in") && (j+1 < splitText.length))
+            {
+              ukaz += " " + splitText[j+1]; // doda št. pina v ukaz
+              added = true;
+              break;
+            }
+          if(!added) ukaz += " 99"; 
+        }
+        else ukaz += " 99"; // če besede "pin" ni v ukazu
         i++;
         break;
       }
       i++;
     }
 
-    for (final u in otherUkazi) {
-      if (_text.contains(u)) {
-        ukaz = i.toString() + " 1";
+    for (final u in otherUkazi)
+    {
+      if (_text.contains(u))
+      {
+        ukaz = i.toString() + " 1 99";
         i++;
         break;
       }
@@ -272,6 +292,7 @@ class _MicScreenState extends State<MicScreen> {
       kids.add(
         Row
         (
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>
           [
             SizedBox(width: 5.0,),
@@ -363,7 +384,7 @@ class _MicScreenState extends State<MicScreen> {
               ),
               Padding(padding: EdgeInsets.only(bottom: 15)),
               Text(
-                "Command: $_text",
+                "Govor: $_text",
                 style: TextStyle(
                     color: Colors.white,
                     fontFamily: 'OpenSans',

@@ -42,19 +42,54 @@ class MyCallbacks: public BLECharacteristicCallbacks
     Serial.println("TELL THE TIME");
   }
   
-  void naredKej(const char ukaz[])
+  void naredKej(const char ukaz[], int n)
   {
     typedef void (MyCallbacks::*ScriptFunction)(int, bool);
-    int pini[] = {2, 3, 99, 99, 99}; // light, computer
-    ScriptFunction arrayFunkcij[] = {
+    //int pini[] = {2, 3, 99, 99, 99}; // light, computer
+    ScriptFunction arrayFunkcij[] = {  
       &MyCallbacks::togglePin,        // light
       &MyCallbacks::togglePin,        // computer
       &MyCallbacks::toggleMusic,      // song
       &MyCallbacks::toggleMusic,      // music
       &MyCallbacks::tellTheTime       // time
-    };
+    }; /* ta array more na koncu met samo 3 elemente
+          togglePin, toggleMusic, toggleTime
+       */
 
-    int ukazInt[2] = {ukaz[0] - '0', ukaz[2] - '0'};
+    int ukazDeli[3]; // function, value, pin
+    int st = 0, j = 0;
+    for(int i = 0; i < n; i++)
+    {
+      if(ukaz[i] == ' ')
+      {
+        ukazDeli[j] = st;
+        j++;
+        st = 0;
+      }
+      else
+      {
+        st *= 10;
+        st += ukaz[i] - '0';
+      }
+    }
+    ukazDeli[j] = st;
+
+    for(int i = 0; i < 3; i++)
+    {
+      Serial.print("Stevilka ");
+      Serial.print(i+1);
+      Serial.print(": ");
+      Serial.println(ukazDeli[i]);
+    }
+
+    MyCallbacks a;
+    (a.*arrayFunkcij[ukazDeli[0]])(ukazDeli[2], (bool)ukazDeli[1]);
+
+
+    // int ukazInt[2] = {ukaz[0] - '0', ukaz[2] - '0'};
+    /* to ni dobr, podatki ukaza se morjo ločevat z
+       presledki in potem procesirat
+       (ni zmeri pin al pa funkcija enomestna stevilka)
     
     Serial.print("Prva stevilka: ");
     Serial.print(ukazInt[0]);
@@ -63,6 +98,7 @@ class MyCallbacks: public BLECharacteristicCallbacks
 
     MyCallbacks a;
     (a.*arrayFunkcij[ukazInt[0]])(pini[ukazInt[0]], (bool)ukazInt[1]);
+    */
   }
   
   void onWrite(BLECharacteristic* pCharacteristic)
@@ -72,7 +108,7 @@ class MyCallbacks: public BLECharacteristicCallbacks
     {
       Serial.print("Received: ");
       Serial.println(rxValue.c_str());
-      naredKej(rxValue.c_str());
+      naredKej(rxValue.c_str(), rxValue.size());
     }
     else Serial.println("Received nothing");
   }
