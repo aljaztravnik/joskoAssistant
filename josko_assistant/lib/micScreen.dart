@@ -10,9 +10,10 @@ import 'package:http/http.dart' as http;
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class MicScreen extends StatefulWidget {
-  const MicScreen({Key key, @required this.device, @required this.userID}) : super(key: key);
+  const MicScreen({Key key, @required this.device, @required this.userID, @required this.ipAddr}) : super(key: key);
   final BluetoothDevice device;
   final String userID;
+  final String ipAddr;
   @override
   _MicScreenState createState() => _MicScreenState();
 }
@@ -26,7 +27,7 @@ class _MicScreenState extends State<MicScreen> {
   bool error, sending, success;
   bool loadTasks = false;
   String msg;
-  String phpurl = "http://192.168.1.7/joskoAssistant_restApi/main.php";
+  //String phpurl = "http://192.168.1.7/joskoAssistant_restApi/main.php";
   String _text = '';
   List<String> taskTypes;
   // TASK MORE MET: pinNum, typeID ------ kasneje še lokacijo ali številko naprave
@@ -42,7 +43,8 @@ class _MicScreenState extends State<MicScreen> {
   }
 
   Future<void> requestTaskTypes() async {
-    var res = await http.post(Uri.parse(phpurl), body: {
+    String phpUrl = "http://" + widget.ipAddr + "/joskoAssistant_restApi/main.php";
+    var res = await http.post(Uri.parse(phpUrl), body: {
       "gettasktypes": "ja",
     });
 
@@ -66,7 +68,8 @@ class _MicScreenState extends State<MicScreen> {
   }
 
   Future<void> requestTaskList() async {
-    var res = await http.post(Uri.parse(phpurl), body: {
+    String phpUrl = "http://" + widget.ipAddr + "/joskoAssistant_restApi/main.php";
+    var res = await http.post(Uri.parse(phpUrl), body: {
       "gettasklist": "ja",
       "userid": widget.userID,
     });
@@ -184,7 +187,7 @@ class _MicScreenState extends State<MicScreen> {
           List<String> splitText = _text.split(" ");
           bool added = false;
           for(int j = 0; j < splitText.length; j++)
-            if((splitText[j] == "pin" || splitText[j] == "in") && (j+1 < splitText.length))
+            if((splitText[j] == "pin" || splitText[j] == "in" || splitText[j] == "pink") && (j+1 < splitText.length))
             {
               ukaz += " " + splitText[j+1]; // doda št. pina v ukaz
               added = true;
@@ -259,7 +262,7 @@ class _MicScreenState extends State<MicScreen> {
             elevation: 5.0,
             onPressed: ()
             {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => AddTask(userID: widget.userID, types: taskTypes,))).then((context) {updateTaskList();});
+              Navigator.push(context, MaterialPageRoute(builder: (context) => AddTask(userID: widget.userID, types: taskTypes, ipAddr: widget.ipAddr,))).then((context) {updateTaskList();});
             },
             //padding: EdgeInsets.all(15.0),
             shape: RoundedRectangleBorder(
@@ -273,7 +276,7 @@ class _MicScreenState extends State<MicScreen> {
             elevation: 5.0,
             onPressed: ()
             {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => DeleteTask(userID: widget.userID, types: taskTypes, taskList: tasks))).then((context) {updateTaskList();});
+              Navigator.push(context, MaterialPageRoute(builder: (context) => DeleteTask(userID: widget.userID, types: taskTypes, taskList: tasks, ipAddr: widget.ipAddr,))).then((context) {updateTaskList();});
             },
             //padding: EdgeInsets.all(15.0),
             shape: RoundedRectangleBorder(

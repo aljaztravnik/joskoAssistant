@@ -6,9 +6,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AddTask extends StatefulWidget {
-  const AddTask({Key key, @required this.userID, @required this.types}) : super(key: key);
+  const AddTask({Key key, @required this.userID, @required this.types, @required this.ipAddr}) : super(key: key);
   final String userID;
   final List<String> types;
+  final String ipAddr;
   @override
   _AddScreenState createState() => _AddScreenState();
 }
@@ -17,7 +18,7 @@ class _AddScreenState extends State<AddTask> {
   bool error, sending, success;
   bool loadTasks = false;
   String msg;
-  String phpurl = "http://192.168.1.7/joskoAssistant_restApi/main.php";
+  //String phpurl = "http://192.168.1.7/joskoAssistant_restApi/main.php";
   String dropdownvalue;
   TextEditingController pinTextController = TextEditingController();
 
@@ -28,11 +29,12 @@ class _AddScreenState extends State<AddTask> {
   }
 
   Future<void> addNewTask() async {
+    String phpUrl = "http://" + widget.ipAddr + "/joskoAssistant_restApi/main.php";
     print("PIN ŠTEVILKA: ${pinTextController.text}");
     print("TYPE ID: ${(widget.types.indexWhere((element) => element == dropdownvalue)).toString()}");
     print("USER ID: ${widget.userID}");
 
-    var res = await http.post(Uri.parse(phpurl), body: {
+    var res = await http.post(Uri.parse(phpUrl), body: {
       "addtask": "ja",
       "pinnum": pinTextController.text,
       "typeid": (widget.types.indexWhere((element) => element == dropdownvalue) + 1).toString(),

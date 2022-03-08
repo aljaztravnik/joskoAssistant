@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'constants.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'dart:convert';
 import 'findDevicesScreen.dart';
 import 'package:http/http.dart' as http;
@@ -16,11 +17,12 @@ class LoginScreen extends StatefulWidget
 
 class _LoginScreenState extends State<LoginScreen>
 {
+  TextEditingController ipTextController = TextEditingController();
   TextEditingController usernameTextController = TextEditingController();
   TextEditingController passwordTextController = TextEditingController();
   int hereAuthenticated = 0;
   bool hasInternet = false;
-  String phpurl = "http://192.168.1.7/joskoAssistant_restApi/main.php";
+  //String phpurl = "http://192.168.1.7/joskoAssistant_restApi/main.php";
 
   checkInternetConnectivity() async
   {
@@ -54,7 +56,8 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Future<void> sendLoginRequest() async {
-    var res = await http.post(Uri.parse(phpurl), body: {
+    String phpUrl = "http://" + ipTextController.text + "/joskoAssistant_restApi/main.php";
+    var res = await http.post(Uri.parse(phpUrl), body: {
       "username": usernameTextController.text,
       "password": passwordTextController.text,
     });
@@ -67,9 +70,41 @@ class _LoginScreenState extends State<LoginScreen>
       if(data["error"]) print("REQUEST ERROR: ${data["error"]}");
       else{
         print("USER ID: ${data["message"]}");
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => FindDevicesScreen(user: data["message"])));
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) => FindDevicesScreen(user: data["message"], ipAddr: ipTextController.text)));
       }
     }
+  }
+
+  Widget _buildIpTF() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        SizedBox(height: 10.0),
+        Container(
+          alignment: Alignment.centerLeft,
+          decoration: kBoxDecorationStyle,
+          height: 60.0,
+          child: TextField(
+            controller: ipTextController,
+            keyboardType: TextInputType.number,
+            style: TextStyle(
+              color: Colors.white,
+              fontFamily: 'OpenSans',
+            ),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.only(top: 14.0),
+              prefixIcon: Icon(
+                MdiIcons.fromString('router-wireless'),
+                color: Colors.white,
+              ),
+              hintText: 'IP naslov rac.',
+              hintStyle: kHintTextStyle,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildEmailTF() {
@@ -215,6 +250,8 @@ class _LoginScreenState extends State<LoginScreen>
               [
                 Text('Josko Assistant',style: TextStyle(color: Colors.white,fontFamily: 'OpenSans',fontSize: 30.0,fontWeight: FontWeight.bold,),),
                 SizedBox(height: 30.0),
+                _buildIpTF(),
+                SizedBox(height: 30.0,),
                 _buildEmailTF(),
                 SizedBox(height: 30.0,),
                 _buildPasswordTF(),

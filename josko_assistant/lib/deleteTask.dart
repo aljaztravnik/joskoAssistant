@@ -6,10 +6,11 @@ import 'constants.dart';
 import 'package:http/http.dart' as http;
 
 class DeleteTask extends StatefulWidget {
-  const DeleteTask({Key key, @required this.userID, @required this.types, @required this.taskList}) : super(key: key);
+  const DeleteTask({Key key, @required this.userID, @required this.types, @required this.taskList, @required this.ipAddr}) : super(key: key);
   final String userID;
   final List<String> types;
   final List<Map<String, int>> taskList;
+  final String ipAddr;
   @override
   _DeleteTaskState createState() => _DeleteTaskState();
 }
@@ -18,7 +19,7 @@ class _DeleteTaskState extends State<DeleteTask> {
   bool error, sending, success;
   bool loadTasks = false;
   String msg;
-  String phpurl = "http://192.168.1.7/joskoAssistant_restApi/main.php";
+  //String phpurl = "http://192.168.1.7/joskoAssistant_restApi/main.php";
   List<Map<String, int>> taskList2 = List<Map<String, int>>.empty(growable: true);
 
   @override
@@ -28,7 +29,8 @@ class _DeleteTaskState extends State<DeleteTask> {
   }
 
   Future<void> deleteSelectedTask(int i) async {
-    var res = await http.post(Uri.parse(phpurl), body: {
+    String phpUrl = "http://" + widget.ipAddr + "/joskoAssistant_restApi/main.php";
+    var res = await http.post(Uri.parse(phpUrl), body: {
       "deletetask": (widget.taskList[i]["taskID"]).toString(),
       "userid": widget.userID,
     });

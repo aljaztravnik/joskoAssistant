@@ -28,6 +28,7 @@ class MyCallbacks: public BLECharacteristicCallbacks
 {
   void togglePin(int pin, bool vrednost)
   {
+    pinMode(pin, OUTPUT);
     digitalWrite(pin, vrednost);
     Serial.println("TOGGLE PIN");
   }
@@ -122,8 +123,6 @@ void setup()
   connectWiFi();
 
   bleInit();
-
-  pinMode(16, OUTPUT); // LED
 }
 
 void loop()

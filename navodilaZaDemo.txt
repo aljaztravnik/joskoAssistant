@@ -1,0 +1,7 @@
+1. instalirej xampp
+2. downloadej projekt iz githuba
+3. nared novo PB v phpmyadminu in pod SQL tab pastej sql kodo iz joskoAssistant_podBaza mape
+4. na nekem fonu nared hotspot in gor povež laptop in telefon na katerem je aplikacija
+5. php server file dej pod xampp/htdocs/joskoAssistant_restApi/main.php
+6. v server filu ustrezno spremen username pa password za dostop do PB
+7. na login screenu vpišeš IP naslov računalnika na katerem je PB in server file
