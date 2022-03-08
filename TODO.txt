@@ -1,10 +1,12 @@
 Podatkovna baza
- -
+- hashanje gesel
+- shranjevanje imen od opravil (asociacija imena opravila v voice recognitionu z določenim opravilom)
 
 
 Aplikacija
 - se en settings tab, kjer lahko dodajas/odstranjujes naprave/funkcije na napravah
+- na nekem setup screenu poves na katero omrezje se naj esp poveze (ssid in geslo)
 
 
 ESP program
-- 
+- poboljšaj "naredKej"
