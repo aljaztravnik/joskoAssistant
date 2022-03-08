@@ -98,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen>
                 MdiIcons.fromString('router-wireless'),
                 color: Colors.white,
               ),
-              hintText: 'IP naslov rac.',
+              hintText: 'IP naslov računalnika',
               hintStyle: kHintTextStyle,
             ),
           ),
@@ -248,7 +248,7 @@ class _LoginScreenState extends State<LoginScreen>
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>
               [
-                Text('Josko Assistant',style: TextStyle(color: Colors.white,fontFamily: 'OpenSans',fontSize: 30.0,fontWeight: FontWeight.bold,),),
+                Text('Joško Assistant',style: TextStyle(color: Colors.white,fontFamily: 'OpenSans',fontSize: 30.0,fontWeight: FontWeight.bold,),),
                 SizedBox(height: 30.0),
                 _buildIpTF(),
                 SizedBox(height: 30.0,),
