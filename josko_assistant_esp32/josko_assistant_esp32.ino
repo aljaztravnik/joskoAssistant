@@ -8,6 +8,7 @@
 #define COMMAND_CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 const char* ssid = "Telemach-8a1e";
 const char* password = "polica20a";
+std::string userID = "prazno";
 BLEServer* pServer = NULL;
 BLECharacteristic* p_command_characteristic = NULL;
 bool deviceConnected = false;
@@ -109,7 +110,12 @@ class MyCallbacks: public BLECharacteristicCallbacks
     {
       Serial.print("Received: ");
       Serial.println(rxValue.c_str());
-      naredKej(rxValue.c_str(), rxValue.size());
+      if((rxValue.find("userID") != std::string::npos) && userID == "prazno") userID = rxValue.substr(7);
+      else if(rxValue.find("ssid") != std::string::npos && ssid == "prazno") ssid = rxValue.substr(5);
+      else if(rxValue.find("pwrd") != std::string::npos && password == "prazno") password = rxValue.substr(5);
+
+        
+      if(userID != "prazno" && ) naredKej(rxValue.c_str(), rxValue.size());
     }
     else Serial.println("Received nothing");
   }
