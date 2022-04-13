@@ -7,9 +7,11 @@ import 'micScreen.dart';
 
 class FindDevicesScreen extends StatefulWidget
 {
-  const FindDevicesScreen({Key key, @required this.user, @required this.ipAddr}) : super(key: key);
+  const FindDevicesScreen({Key key, @required this.user, @required this.ipAddr, @required this.wifiName, @required this.wifiPass}) : super(key: key);
   final String user;
   final String ipAddr;
+  final String wifiName;
+  final String wifiPass;
   @override
   _FindDevicesScreenState createState() => _FindDevicesScreenState();
 }
@@ -68,7 +70,7 @@ class _FindDevicesScreenState extends State<FindDevicesScreen>
                           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context)
                                       {
                                         r.device.connect();
-                                        return MicScreen(device: r.device, userID: widget.user, ipAddr: widget.ipAddr);
+                                        return MicScreen(device: r.device, userID: widget.user, ipAddr: widget.ipAddr, wifiName: widget.wifiName, wifiPass: widget.wifiPass,);
                                       })),
                         ),
                       )

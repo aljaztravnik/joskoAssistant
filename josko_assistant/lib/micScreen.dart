@@ -10,10 +10,12 @@ import 'package:http/http.dart' as http;
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class MicScreen extends StatefulWidget {
-  const MicScreen({Key key, @required this.device, @required this.userID, @required this.ipAddr}) : super(key: key);
+  const MicScreen({Key key, @required this.device, @required this.userID, @required this.ipAddr, @required this.wifiName, @required this.wifiPass}) : super(key: key);
   final BluetoothDevice device;
   final String userID;
   final String ipAddr;
+  final String wifiName;
+  final String wifiPass;
   @override
   _MicScreenState createState() => _MicScreenState();
 }
@@ -111,6 +113,7 @@ class _MicScreenState extends State<MicScreen> {
 
     await widget.device.connect();
     discoverServices();
+    sendUserData();
   }
 
   disconnectFromDevice() {
@@ -164,6 +167,12 @@ class _MicScreenState extends State<MicScreen> {
     Navigator.of(context).pop(true);
   }
 
+  sendUserData() async
+  {
+    String ukaz = "initData," + widget.userID + "," + widget.wifiName + "," + widget.wifiPass;
+    await commandCharacteristic.write(utf8.encode(ukaz));
+  }
+
   sendCommand() async 
   {
     List<String> turnOnOffUkazi = ["lights", "computer", "song", "music"]; // keywordi, ki imajo lahko on/off, start/stop itd.
@@ -185,7 +194,7 @@ class _MicScreenState extends State<MicScreen> {
         if(_text.contains("pin")) // preveri na katerem pinu more funkcija neki nardit
         {
           List<String> splitText = _text.split(" ");
-          bool added = false;
+          bool added = false; // bool če je bil pin dodan ukazu
           for(int j = 0; j < splitText.length; j++)
             if((splitText[j] == "pin" || splitText[j] == "in" || splitText[j] == "pink") && (j+1 < splitText.length))
             {
