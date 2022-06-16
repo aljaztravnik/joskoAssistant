@@ -1,29 +1,34 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'constants.dart';
+import 'package:flutter_blue/flutter_blue.dart';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'micScreen.dart';
 
-class RegistrationScreen extends StatefulWidget
+class LoginEspScreen extends StatefulWidget
 {
-  const RegistrationScreen({Key key}) : super(key: key);
+  const LoginEspScreen({Key key, @required this.device, @required this.userID, @required this.ipAddr}) : super(key: key);
+  final BluetoothDevice device;
+  final String userID;
+  final String ipAddr;
   @override 
-  _RegistrationScreenState createState() => _RegistrationScreenState();
+  _LoginEspScreenState createState() => _LoginEspScreenState();
 }
 
-class _RegistrationScreenState extends State<RegistrationScreen>
+class _LoginEspScreenState extends State<LoginEspScreen>
 {
-  TextEditingController ipTextController = TextEditingController();
   TextEditingController usernameTextController = TextEditingController();
   TextEditingController passwordTextController = TextEditingController();
+  String mode;
 
   @override
   void initState()
   {
     super.initState();
     print("SEM V INIT STATE");
+    if(widget.userID == "1") mode = "admin";
+    else if(widget.userID == "2" || widget.userID == "3") mode = "user";
+    else mode = "fail"; 
   }
 
   @override
@@ -32,60 +37,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
     super.dispose();
   }
 
-  Future<void> sendRegistrationRequest() async {
-    String phpUrl = "http://" + ipTextController.text + "/joskoAssistant_restApi/main.php";
-    var res = await http.post(Uri.parse(phpUrl), body: {
-      "registration": "ja",
-      "username": usernameTextController.text,
-      "password": passwordTextController.text,
-    });
-
-    if (res.statusCode == 200)
-    {
-      // SENDING SUCCESS
-      print(res.body);
-      var data = json.decode(res.body);
-      if(data["error"]) print("REQUEST ERROR: ${data["error"]}");
-      else{
-        print("Registracija: ${data["message"]}");
-        Navigator.of(context).pop(true);
-      }
-    }
-  }
-
-  Widget _buildIpTF() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        SizedBox(height: 10.0),
-        Container(
-          alignment: Alignment.centerLeft,
-          decoration: kBoxDecorationStyle,
-          height: 60.0,
-          child: TextField(
-            controller: ipTextController,
-            keyboardType: TextInputType.number,
-            style: TextStyle(
-              color: Colors.white,
-              fontFamily: 'OpenSans',
-            ),
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.only(top: 14.0),
-              prefixIcon: Icon(
-                MdiIcons.fromString('router-wireless'),
-                color: Colors.white,
-              ),
-              hintText: 'IP naslov računalnika',
-              hintStyle: kHintTextStyle,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildEmailTF() {
+  Widget _buildWiFiTF() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -108,7 +60,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                 Icons.email,
                 color: Colors.white,
               ),
-              hintText: 'Uporabniško ime',
+              hintText: 'WiFi ime',
               hintStyle: kHintTextStyle,
             ),
           ),
@@ -140,7 +92,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                 Icons.lock,
                 color: Colors.white,
               ),
-              hintText: 'Geslo',
+              hintText: 'WiFi geslo',
               hintStyle: kHintTextStyle,
             ),
           ),
@@ -149,7 +101,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
     );
   }
 
-  Widget _buildRegistrationBtn() {
+  Widget _buildDataBtn() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 25.0),
       width: double.infinity,
@@ -157,7 +109,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
         elevation: 5.0,
         onPressed: ()
         {
-          sendRegistrationRequest();
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) => MicScreen(device: widget.device, userID: widget.userID, ipAddr: widget.ipAddr,)));
         },
         padding: EdgeInsets.all(15.0),
         shape: RoundedRectangleBorder(
@@ -165,7 +117,37 @@ class _RegistrationScreenState extends State<RegistrationScreen>
         ),
         color: Colors.white,
         child: Text(
-          'REGISTRACIJA',
+          'Pošlji podatke',
+          style: TextStyle(
+            color: Colors.black,
+            letterSpacing: 1.5,
+            fontSize: 17.0,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'OpenSans',
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOKbutton() {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 25.0),
+      width: double.infinity,
+      child: RaisedButton(
+        elevation: 5.0,
+        onPressed: ()
+        {
+          if(mode != "fail") Navigator.of(context).push(MaterialPageRoute(builder: (context) => MicScreen(device: widget.device, userID: widget.userID, ipAddr: widget.ipAddr,)));
+          else Navigator.of(context).pop(true);
+        },
+        padding: EdgeInsets.all(15.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        color: Colors.white,
+        child: Text(
+          'Vredu',
           style: TextStyle(
             color: Colors.black,
             letterSpacing: 1.5,
@@ -203,14 +185,13 @@ class _RegistrationScreenState extends State<RegistrationScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>
           [
-            Text('Registracija',style: TextStyle(color: Colors.white,fontFamily: 'OpenSans',fontSize: 30.0,fontWeight: FontWeight.bold,),),
-            SizedBox(height: 30.0),
-            _buildIpTF(),
-            SizedBox(height: 30.0,),
-            _buildEmailTF(),
-            SizedBox(height: 30.0,),
-            _buildPasswordTF(),
-            _buildRegistrationBtn(),
+            Text((mode == "admin") ? 'Vpisani kot admin' : (mode == "user") ? 'Vpisani kot user' : 'Neuspel vpis' ,style: TextStyle(color: Colors.white,fontFamily: 'OpenSans',fontSize: 30.0,fontWeight: FontWeight.bold,),),
+            //SizedBox(height: 30.0),
+            //_buildWiFiTF(),
+            //SizedBox(height: 30.0,),
+            //_buildPasswordTF(),
+            //
+            _buildOKbutton(),
           ],
         ),
       ),

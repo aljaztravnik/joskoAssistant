@@ -1,4 +1,6 @@
 #include <WiFi.h>
+#include <EEPROM.h>
+#include "time.h"
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
@@ -6,14 +8,15 @@
 
 #define COMMAND_SERVICE_UUID "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define COMMAND_CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
-const char* ssid = "Telemach-8a1e";
-const char* password = "polica20a";
-std::string podatki[] = {"", "", ""};
+std::string podatki[] = {"", "", "", "", ""};
 BLEServer* pServer = NULL;
 BLECharacteristic* p_command_characteristic = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 bool initData = false;
+const char* ntpServer = "pool.ntp.org";
+const long gmtOffset_sec = 3600;
+const int daylightOffset_sec = 3600;
 
 class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
@@ -43,16 +46,20 @@ class MyCallbacks: public BLECharacteristicCallbacks
   void tellTheTime(int worthless, bool worthless2)
   {
     Serial.println("TELL THE TIME");
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+    struct tm timeinfo;
+    if(!getLocalTime(&timeinfo)){
+      Serial.println("Failed to obtain time");
+      return;
+    }
+    Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
   }
   
   void naredKej(const char ukaz[], int n)
   {
     typedef void (MyCallbacks::*ScriptFunction)(int, bool);
-    //int pini[] = {2, 3, 99, 99, 99}; // light, computer
     ScriptFunction arrayFunkcij[] = {  
       &MyCallbacks::togglePin,        // light
-      &MyCallbacks::togglePin,        // computer
-      &MyCallbacks::toggleMusic,      // song
       &MyCallbacks::toggleMusic,      // music
       &MyCallbacks::tellTheTime       // time
     }; /* ta array more na koncu met samo 3 elemente
@@ -98,6 +105,7 @@ class MyCallbacks: public BLECharacteristicCallbacks
       Serial.println(rxValue.c_str());
       if((rxValue.find("initData") != std::string::npos) && !initData)
       {
+        Serial.println("Dobil init");
         bool prepisuj = false;
         int j = 0;
         for(int i = 0; i < rxValue.size(); ++i)
@@ -108,13 +116,75 @@ class MyCallbacks: public BLECharacteristicCallbacks
           }
           else if(prepisuj) podatki[j] += rxValue[i];
         }
-        initData = (j == 2) ? true : false;
+        if(j == 1)
+        {
+          writeSsidPword();
+          initData = true;
+          WiFi.begin(podatki[0].c_str(), podatki[1].c_str());
+        }
       }
-
-        
-      if(initData) naredKej(rxValue.c_str(), rxValue.size());
+      else if(rxValue.find("user") != std::string::npos)
+      {
+        Serial.println("Dobil login");
+        bool prepisuj = false;
+        std::string tempUser = "";
+        for(int i = 0; i < rxValue.size(); ++i)
+        {
+          if(rxValue[i] == ',') prepisuj = true;
+          else if(prepisuj) tempUser += rxValue[i];
+        }
+        if(tempUser.size() > 0)
+        {
+          int res = loginStuff(tempUser);
+          // posli nazaj login result
+        }
+        else Serial.println("Brez UserID");
+      }
+      else if(initData) naredKej(rxValue.c_str(), rxValue.size());
     }
     else Serial.println("Received nothing");
+  }
+
+  void writeSsidPword()
+  {
+    for(int i = 0; i < podatki[0].size(); ++i)
+      EEPROM.write(i, podatki[0][i]);
+    for(int i = 0; i < podatki[1].size(); i++)
+      EEPROM.write(32 + i, podatki[1][i]);
+    EEPROM.commit();
+  }
+
+  int loginStuff(std::string login)
+  {
+    std::string users[] = {"", "", ""};
+    int koliko = 0, i = 64, meja = 96;
+    char tmp;
+    for(int j = 0; j < 3; j++)
+    {
+      for(i; i < meja; i++)
+      {
+        tmp = EEPROM.read(i);
+        if(tmp == 255) break;
+        users[j] += (char)tmp;
+      }
+      if(login == users[j]) return 1; // uspesen navaden login
+      i = meja;
+      meja += 32;
+    }
+
+    for(int k = 0; k < 3; k++)
+      if(users[k].size() > 0) koliko++;
+
+    if(koliko == 3) return 0; // vsa mesta so polna in ni blo prej matcha
+    else
+    {
+      for(int k = 0; k < login.size(); k++)
+      {
+        EEPROM.write((64 + (koliko*32) + k), login[k]);
+      }
+      EEPROM.commit();
+      return (koliko == 0) ? 2 : 1; // vrne 2 (admin) ali pa 1 (navaden login)
+    }
   }
 };
 
@@ -122,15 +192,54 @@ void setup()
 {
   Serial.begin(115200);
 
-  WiFi.begin(ssid, password);
-  connectWiFi();
+  EEPROM.begin(512);
+  readData();
+
+  if(initData)
+  {
+    WiFi.begin(podatki[0].c_str(), podatki[1].c_str());
+    connectWiFi();
+  }
 
   bleInit();
 }
 
 void loop()
 {
-  if(WiFi.status() != WL_CONNECTED) connectWiFi();
+  if(initData)
+  {
+    if(WiFi.status() != WL_CONNECTED) connectWiFi();
+  }
+}
+
+void readData()
+{
+  int j = 0, meja = 32;
+  for(int i = 0; i < 5; i++)
+  {
+    for(j; j < meja; j++)
+    {
+      int tmp = EEPROM.read(j);
+      if(tmp == 255) break;
+      podatki[i] += (char)tmp;
+    }
+    j = meja;
+    meja += 32;
+  }
+    
+  Serial.print("PREBRAL SSID: ");
+  Serial.println(podatki[0].c_str());
+  Serial.print("PWORD: ");
+  Serial.println(podatki[1].c_str());
+  Serial.print("USER 1: ");
+  Serial.println(podatki[2].c_str());
+  Serial.print("USER 2: ");
+  Serial.println(podatki[3].c_str());
+  Serial.print("USER 3: ");
+  Serial.println(podatki[4].c_str());
+
+  if(podatki[0][0] != 255 && podatki[1][0] != 255) initData = true;
+  else initData = false;
 }
 
 void connectWiFi()
@@ -148,7 +257,7 @@ void connectWiFi()
 
 void bleInit()
 {
-  BLEDevice::init("Josko Assistant");
+  BLEDevice::init("Josko asistent");
   pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
 

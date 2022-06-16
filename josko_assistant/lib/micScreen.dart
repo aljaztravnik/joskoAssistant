@@ -10,12 +10,10 @@ import 'package:http/http.dart' as http;
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class MicScreen extends StatefulWidget {
-  const MicScreen({Key key, @required this.device, @required this.userID, @required this.ipAddr, @required this.wifiName, @required this.wifiPass}) : super(key: key);
+  const MicScreen({Key key, @required this.device, @required this.userID, @required this.ipAddr}) : super(key: key);
   final BluetoothDevice device;
   final String userID;
   final String ipAddr;
-  final String wifiName;
-  final String wifiPass;
   @override
   _MicScreenState createState() => _MicScreenState();
 }
@@ -111,9 +109,8 @@ class _MicScreenState extends State<MicScreen> {
       return;
     }
 
-    await widget.device.connect();
+    //await widget.device.connect();
     discoverServices();
-    sendUserData();
   }
 
   disconnectFromDevice() {
@@ -167,23 +164,25 @@ class _MicScreenState extends State<MicScreen> {
     Navigator.of(context).pop(true);
   }
 
-  sendUserData() async
+  /*sendUserData() async
   {
-    String ukaz = "initData," + widget.userID + "," + widget.wifiName + "," + widget.wifiPass;
+    String ukaz = "initData," + widget.wifiName + "," + widget.wifiPass;
     await commandCharacteristic.write(utf8.encode(ukaz));
-  }
+  }*/
 
   sendCommand() async 
   {
-    List<String> turnOnOffUkazi = ["lights", "computer", "song", "music"]; // keywordi, ki imajo lahko on/off, start/stop itd.
-    List<String> otherUkazi = ["time"];                                    // keywordi, ki samo nekaj naredijo
+    List<String> turnOnOffUkazi = ["lights", "computer", "fan", "relay", "tv", "television", "microwave", "motor", "engine", "radio"]; // 0
+    List<String> musicUkazi = ["song", "music", "playlist", "list"];                                                                   // 1
+    List<String> timeUkazi = ["time", "clock", "hour"];                                                                                // 2
     // te stringi so pol custom (dodajajo se ob dodajanju taska in se posodabljajo tut na esp32)
 
-    String ukaz = "";
+    String ukaz = ""; // funkcija, vrednost, pin
     int i = 0;
     String onOff = "0";
+    bool narjenUkaz = false;
 
-    if (_text.contains("turn on") || _text.contains("start") || _text.contains("resume")) onOff = "1";
+    if (_text.contains("turn on") || _text.contains("start") || _text.contains("resume") || _text.contains("play")) onOff = "1";
     else if (_text.contains("turn off") || _text.contains("stop") || _text.contains("pause")) onOff = "0";
 
     for (final u in turnOnOffUkazi)
@@ -200,30 +199,52 @@ class _MicScreenState extends State<MicScreen> {
             {
               ukaz += " " + splitText[j+1]; // doda št. pina v ukaz
               added = true;
+              narjenUkaz = true;
               break;
             }
-          if(!added) ukaz += " 99"; 
+          if(!added)
+          {
+            ukaz += " 99";
+            narjenUkaz = true;
+          }
         }
-        else ukaz += " 99"; // če besede "pin" ni v ukazu
-        i++;
+        else
+        {
+          ukaz += " 99"; // če besede "pin" ni v ukazu
+          narjenUkaz = true;
+        }
         break;
       }
-      i++;
     }
-
-    for (final u in otherUkazi)
+    i++;
+    if(!narjenUkaz)
     {
-      if (_text.contains(u))
+      for (final u in musicUkazi)
       {
-        ukaz = i.toString() + " 1 99";
-        i++;
-        break;
+        if (_text.contains(u))
+        {
+          ukaz = i.toString() + " " + onOff + " 99";
+          narjenUkaz = true;
+          break;
+        }
       }
-      i++;
     }
+    i++;
+    if(!narjenUkaz)
+    {
+      for (final u in timeUkazi)
+      {
+        if (_text.contains(u))
+        {
+          ukaz = i.toString() + " 1 99";
+          narjenUkaz = true;
+          break;
+        }
+      }
+    }
+    i++;
 
     await commandCharacteristic.write(utf8.encode(ukaz));
-    //await commandCharacteristic.write(utf8.encode(_text));
   }
 
   void _listen() async {

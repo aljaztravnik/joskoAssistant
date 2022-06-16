@@ -17,14 +17,46 @@
     }
 
     $loginAttempt = isset($_POST["username"]) && isset($_POST["password"]);
+    $registrationAttempt = isset($_POST["registration"]) && isset($_POST["username"]) && isset($_POST["password"]);
     $getTaskTypes = isset($_POST["gettasktypes"]);
     $getTaskList = isset($_POST["gettasklist"]) && isset($_POST["userid"]);
     $addTask = isset($_POST["addtask"]) && isset($_POST["pinnum"]) && isset($_POST["typeid"]) && isset($_POST["userid"]);
     $deleteTask = isset($_POST["deletetask"]) && isset($_POST["userid"]);
 
 
+    if($registrationAttempt)
+    {
+        $uname = mysqli_real_escape_string($link, $_POST["username"]);
+        $pword = mysqli_real_escape_string($link, $_POST["password"]);
+        $hashedPword = password_hash($pword, PASSWORD_DEFAULT);
+        
+        $getLastUserIDsql = "SELECT UserID FROM User ORDER BY UserID DESC LIMIT 1";
+        $resUserID = mysqli_query($link, $getLastUserIDsql);
+        if(mysqli_num_rows($resUserID) == 1)
+        {
+            $row = mysqli_fetch_assoc($resUserID);
+            $userID = $row["UserID"] + 1;
 
-    if($loginAttempt)
+            $sql = "INSERT INTO `User` (`UserID`, `Username`, `Password`) VALUES ('$userID', '$uname', '$hashedPword')";
+            $res = mysqli_query($link, $sql);
+
+            if($res)
+            {
+                $return["message"] = "registration success";
+            }
+            else
+            {
+                $return["error"] = true;
+                $return["message"] = "registration failure";
+            }
+        }
+        else
+        {
+            $return["error"] = true;
+            $return["message"] = "error at userid select";
+        }
+    }
+    else if($loginAttempt)
     {
         $uname = mysqli_real_escape_string($link, $_POST["username"]);
         $pword = mysqli_real_escape_string($link, $_POST["password"]);
@@ -36,13 +68,20 @@
 
         if($return["error"] == false)
         {   
-            $sql = "SELECT * FROM User WHERE Username='$uname' AND Password='$pword'"; // KASNEJE PREVENTEJ REPLIKE VNOSOV, TKO DA BO TO VEDNO VRNL EN REZULTAT
+            $sql = "SELECT * FROM User WHERE Username='$uname'"; // KASNEJE PREVENTEJ REPLIKE VNOSOV, TKO DA BO TO VEDNO VRNL EN REZULTAT
             $res = mysqli_query($link, $sql);
 
             if(mysqli_num_rows($res) == 1)
             {
                 $row = mysqli_fetch_assoc($res);
-                $return["message"] = $row["UserID"];
+                if(password_verify($pword, $row["Password"])) {
+                    $return["message"] = $row["UserID"];
+                }
+                else
+                {
+                    $return["error"] = true;
+                    $return["message"] = "login failure";
+                }
             }
             else
             {
@@ -161,7 +200,7 @@
         $return["error"] = true;
         $return["message"] = 'incorrect parameters';
     }
-
+    
     
     mysqli_close($link);
     header('Content-Type: application/json');

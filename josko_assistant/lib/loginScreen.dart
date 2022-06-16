@@ -20,11 +20,8 @@ class LoginScreen extends StatefulWidget
 class _LoginScreenState extends State<LoginScreen>
 {
   TextEditingController ipTextController = TextEditingController();
-  TextEditingController wifiPassTextController = TextEditingController();
   TextEditingController usernameTextController = TextEditingController();
   TextEditingController passwordTextController = TextEditingController();
-  //final WifiInfo _wifiInfo = WifiInfo();
-  String WiFiName = "";
   int hereAuthenticated = 0;
   bool hasInternet = false;
   //String phpurl = "http://192.168.1.7/joskoAssistant_restApi/main.php";
@@ -37,7 +34,6 @@ class _LoginScreenState extends State<LoginScreen>
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty)
       {
         print('WE HAVE INTERNET');
-        //WiFiName = await _wifiInfo.getWifiName();
         hasInternet = true;
       }
     } on SocketException catch (_) 
@@ -76,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen>
       if(data["error"]) print("REQUEST ERROR: ${data["error"]}");
       else{
         print("USER ID: ${data["message"]}");
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => FindDevicesScreen(user: data["message"], ipAddr: ipTextController.text, wifiName: WiFiName, wifiPass: wifiPassTextController.text,)));
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) => FindDevicesScreen(user: data["message"], ipAddr: ipTextController.text,)));
       }
     }
   }
@@ -105,38 +101,6 @@ class _LoginScreenState extends State<LoginScreen>
                 color: Colors.white,
               ),
               hintText: 'IP naslov računalnika',
-              hintStyle: kHintTextStyle,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildWiFiPassTF() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        SizedBox(height: 10.0),
-        Container(
-          alignment: Alignment.centerLeft,
-          decoration: kBoxDecorationStyle,
-          height: 60.0,
-          child: TextField(
-            controller: passwordTextController,
-            obscureText: true,
-            style: TextStyle(
-              color: Colors.white,
-              fontFamily: 'OpenSans',
-            ),
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.only(top: 14.0),
-              prefixIcon: Icon(
-                Icons.lock,
-                color: Colors.white,
-              ),
-              hintText: 'Geslo WiFi omrežja',
               hintStyle: kHintTextStyle,
             ),
           ),
@@ -290,8 +254,6 @@ class _LoginScreenState extends State<LoginScreen>
                 SizedBox(height: 30.0),
                 _buildIpTF(),
                 SizedBox(height: 30.0),
-                _buildWiFiPassTF(),
-                SizedBox(height: 30.0,),
                 _buildEmailTF(),
                 SizedBox(height: 30.0,),
                 _buildPasswordTF(),
